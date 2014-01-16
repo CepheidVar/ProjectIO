@@ -1,11 +1,8 @@
-#version 150
-
 uniform sampler2D inTexture;
 
-out vec4 outFragment;
-in vec2 outTexCoord;
-in vec4 outColour;
+varying vec2 outTexCoord;
+varying vec4 outColour;
 
 void main() {
-	outFragment = mix(outColour, texture(inTexture, outTexCoord.st), 1.0);
+	gl_FragColor = mix(outColour, texture2D(inTexture, outTexCoord.st), 1.0);
 }

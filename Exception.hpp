@@ -13,10 +13,8 @@ namespace io {
       this->message = message;
 #ifdef __APPLE__
       frameCount = backtrace(frameList, Exception::MAX_FRAMES);
-#elif !__APPLE__
-      frameCount = 0;
 #else
-      frameCount = 0;
+      frameCount = backtrace(frameList, Exception::MAX_FRAMES);
 #endif
     }
 

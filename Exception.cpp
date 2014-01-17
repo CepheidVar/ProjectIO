@@ -8,8 +8,8 @@ namespace io {
   void Exception::printStackTrace() const {
     fprintf(stderr, "Stack Trace:  \n");
     if (frameCount > 0) {
-#ifdef __APPLE__
       char** frameStrs = backtrace_symbols(frameList, frameCount);
+#ifdef __APPLE__
       /*
        * We start at 2 because the stack trace information is obtained at
        * the instantiation of the exception.  This results in extra
@@ -38,11 +38,12 @@ namespace io {
           break;
         }
       }
-#elif !__APPLE__
-
 #else
-
+      for (uint32_t i = 1; i < frameCount; i++) {
+        fprintf(stderr, "%s\n", frameStrs[i]);
+      }
 #endif
+      free(frameStrs);
     }
   }
 }

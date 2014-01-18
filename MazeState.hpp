@@ -42,6 +42,9 @@ namespace io {
     virtual void onActivate();
 
     void activateActivatable();
+    void activateDoor(Door* door);
+    void activateSecretDoor(SecretDoor* secretDoor);
+    void activateStairs(Stairs* stairs);
     void movePlayerForward();
     void movePlayerBackward();
     void turnPlayerLeft();

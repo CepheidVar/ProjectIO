@@ -120,31 +120,56 @@ namespace io {
   }
 
   void MazeState::activateActivatable() {
-    Activatable* activatable = nullptr;
+    int32_t lookX = 0;
+    int32_t lookY = 0;
     switch (player->getFacing()) {
     case Facing::NORTH:
-      activatable = currentMap->getCell(player->getX(), player->getY() - 1)
-          .getActivatable();
+      lookX = player->getX();
+      lookY = player->getY() - 1;
       break;
     case Facing::EAST:
-      activatable = currentMap->getCell(player->getX() + 1, player->getY())
-          .getActivatable();
+      lookX = player->getX() + 1;
+      lookY = player->getY();
       break;
     case Facing::SOUTH:
-      activatable = currentMap->getCell(player->getX(), player->getY() + 1)
-          .getActivatable();
+      lookX = player->getX();
+      lookY = player->getY() + 1;
       break;
     case Facing::WEST:
-      activatable = currentMap->getCell(player->getX() - 1, player->getY())
-          .getActivatable();
+      lookX = player->getX() - 1;
+      lookY = player->getY();
       break;
     }
+    
+    Activatable* act = currentMap->getCell()->getActivatable(lookX, lookY);
 
-    if (activatable) {
-      activatable->activate(player);
+    if (act) {
+      if (act->asDoor()) {
+        activateDoor(act->asDoor());
+      }
+      
+      if (act->asSecretDoor()) {
+        activateSecretDoor(act->asSecretDoor());
+      }
+      
+      if (act->asStairs()) {
+        activateStairs(act->asStairs());
+      }
     }
   }
 
+  void MazeState::activateDoor(Door* door) {
+    
+  }
+  
+  void MazeState::activateSecretDoor(SecretDoor* secretDoor) {
+    
+  }
+  
+  void MazeState::activateStairs(Stairs* stairs) {
+    
+  }
+    
   void MazeState::movePlayerForward() {
     if (inputDisabled) {
       return;

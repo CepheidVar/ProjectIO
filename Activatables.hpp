@@ -21,6 +21,10 @@
 #include "Entity.hpp"
 
 namespace io {
+  class Door;
+  class SecretDoor;
+  class Stairs;
+  
   class Activatable {
   public:
     Activatable() {
@@ -28,8 +32,18 @@ namespace io {
 
     virtual ~Activatable() { }
 
-    virtual void activate(Entity* activator) = 0;
-
+    virtual Door* asDoor() {
+      return nullptr;
+    }
+    
+    virtual SecretDoor* asSecretDoor() {
+      return nullptr;
+    }
+    
+    virtual Stairs* asStairs() {
+      return nullptr;
+    }
+    
     virtual void draw(Graphics* g) { }
 
     virtual bool isSolid() const {
@@ -52,7 +66,8 @@ namespace io {
     virtual ~Door() {
 
     }
-
+    
+    /*
     virtual void activate(Entity* activator) {
       if (getOrientation() == Orientation::VERTICAL) {
         switch(activator->getFacing()) {
@@ -78,6 +93,11 @@ namespace io {
           break;
         }
       }
+    }
+    */
+    
+    virtual Door* asDoor() {
+      return this;
     }
 
     Orientation getOrientation() const {
@@ -110,6 +130,7 @@ namespace io {
 
     }
 
+    /*
     virtual void activate(Entity* activator) {
       switch(getDirection()) {
       case SecretDoorDirection::NORTH:
@@ -158,6 +179,11 @@ namespace io {
         break;
       }
     }
+    */
+    
+    virtual SecretDoor* asSecretDoor() {
+      return this;
+    }
 
     SecretDoorDirection getDirection() const {
       return direction;
@@ -187,9 +213,15 @@ namespace io {
     virtual ~Stairs() {
 
     }
-
+    
+    /*
     virtual void activate(Entity* activator) {
 
+    }
+    */
+    
+    virtual Stairs* asStairs() {
+      return this;
     }
 
     StairDirection getDirection() const {

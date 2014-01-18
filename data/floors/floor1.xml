@@ -4,32 +4,41 @@
 	<objects>
 		<door>
 			<x>17</x>
-			<y>27</y>
+			<y>26</y>
 			<orientation>vertical</orientation>
 		</door>
 		
 		<door>
 			<x>19</x>
-			<y>25</y>
+			<y>24</y>
 			<orientation>horizontal</orientation>
 		</door>
 		
 		<secretDoor>
 			<x>17</x>
-			<y>23</y>
+			<y>22</y>
 			<direction>north-south</direction>
 		</secretDoor>
 		
 		<secretDoor>
 			<x>19</x>
-			<y>21</y>
+			<y>20</y>
 			<direction>east</direction>
 		</secretDoor>
 		
 		<secretDoor>
 			<x>21</x>
-			<y>23</y>
+			<y>22</y>
 			<direction>south</direction>
 		</secretDoor>
+
+		<stairs>
+			<x>17</x>
+			<y>28</y>
+			<destinationFacing>north</destinationFacing>
+			<destinationX>0</destinationX>
+			<destinationY>0</destinationY>
+			<direction>up</direction>
+		</stairs>
 	</objects>
 </floor>

@@ -144,6 +144,68 @@ namespace io {
 
                 newMap->getCell(x + 1, y + 1).setActivatable(sd);
               }
+              else if (name.compare("stairs") == 0) {
+                XMLElement* dir = element->FirstChildElement("direction");
+                XMLElement* dstX = element->FirstChildElement("destinationX");
+                XMLElement* dstY = element->FirstChildElement("destinationY");
+                XMLElement* dstFacing = element->FirstChildElement("destinationFacing");
+                
+                if (!dir || !dir->GetText()) {
+                  
+                }
+                
+                if (!dstFacing || !dstFacing->GetText()) {
+                  
+                }
+                
+                int32_t dstIntX = 0;
+                if (!dstX || dstX->QueryIntText(&dstIntX) != XML_SUCCESS) {
+                  
+                }
+                
+                int32_t dstIntY = 0;
+                if (!dstY || dstY->QueryIntText(&dstIntY) != XML_SUCCESS) {
+                  
+                }
+                
+                StairDirection dirStairs = StairDirection::UP;
+                std::string dirString = dir->GetText();
+                if (dirString.compare("up") == 0) {
+                  dirStairs = StairDirection::UP;
+                }
+                else if (dirString.compare("down") == 0) {
+                  dirStairs = StairDirection::DOWN;
+                }
+                else {
+                  
+                }
+                
+                Facing stairsFacing = Facing::NORTH;
+                std::string dstFacingString = dstFacing->GetText();
+                if (dstFacingString.compare("north") == 0) {
+                  stairsFacing = Facing::NORTH;
+                }
+                else if (dstFacingString.compare("east") == 0) {
+                  stairsFacing = Facing::EAST;
+                }
+                else if (dstFacingString.compare("south") == 0) {
+                  stairsFacing = Facing::SOUTH;
+                }
+                else if (dstFacingString.compare("west") == 0) {
+                  stairsFacing = Facing::WEST;
+                }
+                else {
+                  
+                }
+                
+                Stairs* s = new Stairs();
+                s->setDestinationX(dstIntX);
+                s->setDestinationY(dstIntY);
+                s->setDirection(dirStairs);
+                s->setDestinationFacing(stairsFacing);
+                
+                newMap->getCell(x + 1, y + 1).setActivatable(s);
+              }
               else {
                 throw std::runtime_error("Map::mapFromXML():  Unknown object type.");
               }

@@ -141,7 +141,7 @@ namespace io {
       break;
     }
     
-    Activatable* act = currentMap->getCell()->getActivatable(lookX, lookY);
+    Activatable* act = currentMap->getCell(lookX, lookY).getActivatable();
 
     if (act) {
       if (act->asDoor()) {
@@ -159,15 +159,152 @@ namespace io {
   }
 
   void MazeState::activateDoor(Door* door) {
+    int32_t newX = player->getX();
+    int32_t newY = player->getY();
     
+    if (door->getOrientation() == Orientation::VERTICAL) {
+      switch(player->getFacing()) {
+      case Facing::NORTH:
+        newY -= 2;
+        break;
+      case Facing::SOUTH:
+        newY += 2;
+        break;
+      default:
+        break;
+      }
+    }
+    else {
+      switch(player->getFacing()) {
+      case Facing::EAST:
+        newX += 2;
+        break;
+      case Facing::WEST:
+        newX -= 2;
+        break;
+      default:
+        break;
+      }
+    }
+    
+    if (currentMap->canEntityEnterCell(newX, newY)) {
+      player->setX(newX);
+      player->setY(newY);
+    }
+    else {
+      writeToLog(MessageLevel::WARNING, "MazeState::activateDoor():  Attempted to move player into invalid location.");
+    }
   }
   
   void MazeState::activateSecretDoor(SecretDoor* secretDoor) {
+    int32_t newX = player->getX();
+    int32_t newY = player->getY();
     
+    switch(secretDoor->getDirection()) {
+    case SecretDoorDirection::NORTH:
+      if (player->getFacing() == Facing::NORTH) {
+        newY -= 2;
+      }
+      break;
+    case SecretDoorDirection::EAST:
+      if (player->getFacing() == Facing::EAST) {
+        newX += 2;
+      }
+      break;
+    case SecretDoorDirection::SOUTH:
+      if (player->getFacing() == Facing::SOUTH) {
+        newY += 2;
+      }
+      break;
+    case SecretDoorDirection::WEST:
+      if (player->getFacing() == Facing::WEST) {
+        newX -= 2;
+      }
+      break;
+    case SecretDoorDirection::NORTH_SOUTH:
+      switch (player->getFacing()) {
+      case Facing::NORTH:
+        newY -= 2;
+        break;
+      case Facing::SOUTH:
+        newY += 2;
+        break;
+      default:
+        break;
+      }
+      break;
+    case SecretDoorDirection::EAST_WEST:
+      switch(player->getFacing()) {
+      case Facing::EAST:
+        newX += 2;
+        break;
+      case Facing::WEST:
+        newX -= 2;
+        break;
+      default:
+        break;
+      }
+      break;
+    }
+
+    if (currentMap->canEntityEnterCell(newX, newY)) {
+      player->setX(newX);
+      player->setY(newY);
+    }
+    else {
+      writeToLog(MessageLevel::WARNING, "MazeState::activateSecretDoor():  Attempted to move player into invalid location.");
+    }
   }
   
   void MazeState::activateStairs(Stairs* stairs) {
+    int32_t newX = stairs->getDestinationX();
+    int32_t newY = stairs->getDestinationY();
+    int32_t newFloor = currentFloor;
+
+    //  Check make sure the player is facing the right direction.
+    bool isFacing = false;
+    switch(stairs->getDestinationFacing()) {
+    case Facing::NORTH:
+      isFacing = (player->getFacing() == Facing::SOUTH);
+      break;
+    case Facing::EAST:
+      isFacing = (player->getFacing() == Facing::WEST);
+      break;
+    case Facing::SOUTH:
+      isFacing = (player->getFacing() == Facing::NORTH);
+      break;
+    case Facing::WEST:
+      isFacing = (player->getFacing() == Facing::EAST);
+      break;
+    }
     
+    if (!isFacing) {
+      return;
+    }
+    
+    switch(stairs->getDirection()) {
+    case StairDirection::UP:
+      newFloor--;
+      break;
+    case StairDirection::DOWN:
+      newFloor++;
+      break;
+    }
+    
+    if (newFloor > 0) {
+      Map* newMap = maze->getFloor(newFloor);
+      if (newMap->canEntityEnterCell(newX, newY)) {
+        currentMap = newMap;
+        player->setX(newX);
+        player->setY(newY);
+      }
+      else {
+
+      }
+    }
+    else {
+      stateMachine->setState(GameState::TOWN);
+    }
   }
     
   void MazeState::movePlayerForward() {

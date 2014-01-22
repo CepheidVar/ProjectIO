@@ -246,6 +246,9 @@ namespace io {
       int16_t vit;
       int16_t agi;
       int16_t luk;
+      
+      Character(const Character&) = delete;
+      Character& operator=(const Character&) = delete;
   };
 }
 

@@ -15,6 +15,7 @@
 */
 #include "Class.hpp"
 #include "tinyxml2.h"
+#include "Log.hpp"
 #include <boost/filesystem.hpp>
 #include <stdexcept>
 
@@ -27,7 +28,7 @@ namespace io {
     if (exists(p) && is_regular_file(p)) {
       XMLDocument doc;
       if (doc.LoadFile(filename.c_str()) != XML_SUCCESS) {
-        throw std::runtime_error("Class::Class:  Could not load file.");
+        throw std::runtime_error("Class::Class():  Could not parse class file.");
       }
 
       XMLElement* root = doc.RootElement();
@@ -36,27 +37,23 @@ namespace io {
         XMLElement* shortNameNode = root->FirstChildElement("shortName");
         XMLElement* levelNode = root->FirstChildElement("level");
 
-        if (!nameNode) {
-          throw std::runtime_error("Class::Class:  No name node found.");
+        if (!nameNode || !nameNode->GetText()) {
+          throw std::runtime_error("Class::Class():  Empty or missing name node.");
         }
 
-        if (!shortNameNode) {
-          throw std::runtime_error("Class::Class:  No short name node found.");
+        if (!shortNameNode || !shortNameNode->GetText()) {
+          throw std::runtime_error("Class::Class():  Empty or missing shortName node.");
         }
 
         if (!levelNode) {
-          throw std::runtime_error("Class::Class:  No level nodes found.");
+          throw std::runtime_error("Class::Class():  No levels nodes found.");
         }
 
         name = std::string(nameNode->GetText());
         shortName = std::string(shortNameNode->GetText());
 
         int16_t level = 0;
-        while (levelNode) {
-          if (level >= Class::MAX_LEVEL) {
-            throw std::runtime_error("Class::Class:  Too many level nodes.");
-          }
-
+        while (levelNode && level < Class::MAX_LEVEL) {
           XMLElement* hpNode = levelNode->FirstChildElement("hp");
           XMLElement* tpNode = levelNode->FirstChildElement("tp");
           XMLElement* strNode = levelNode->FirstChildElement("str");
@@ -66,25 +63,39 @@ namespace io {
           XMLElement* lukNode = levelNode->FirstChildElement("luk");
 
           int hp = 0;
-          hpNode->QueryIntText(&hp);
+          if (!hpNode || hpNode->QueryIntText(&hp) != XML_SUCCESS) {
+            throw std::runtime_error("Class::Class():  Invalid, empty or non-existent hp node.");
+          }
 
           int tp = 0;
-          tpNode->QueryIntText(&tp);
+          if (!tpNode || tpNode->QueryIntText(&tp) != XML_SUCCESS) {
+            throw std::runtime_error("Class::Class():  Invalid, empty or non-existent tp node.");
+          }
 
           int str = 0;
-          strNode->QueryIntText(&str);
-
+          if (!strNode || strNode->QueryIntText(&str) != XML_SUCCESS) {
+            throw std::runtime_error("Class::Class():  Invalid, empty or non-existent str node.");
+          }
+          
           int vit = 0;
-          vitNode->QueryIntText(&vit);
+          if (!vitNode || vitNode->QueryIntText(&vit) != XML_SUCCESS) {
+            throw std::runtime_error("Class::Class():  Invalid, empty or non-existent vit node.");
+          }
 
           int tec = 0;
-          tecNode->QueryIntText(&tec);
+          if (!tecNode || tecNode->QueryIntText(&tec) != XML_SUCCESS) {
+            throw std::runtime_error("Class::Class():  Invalid, empty or non-existent tec node.");
+          }
 
           int agi = 0;
-          agiNode->QueryIntText(&agi);
-
+          if (!agiNode || agiNode->QueryIntText(&agi) != XML_SUCCESS) {
+            throw std::runtime_error("Class::Class():  Invalid, empty or non-existent agi node.");
+          }
+          
           int luk = 0;
-          lukNode->QueryIntText(&luk);
+          if (!lukNode || lukNode->QueryIntText(&luk) != XML_SUCCESS) {
+            throw std::runtime_error("Class::Class():  Invalid, empty or non-existent luk node.");
+          }
 
           stats[level].hp = hp;
           stats[level].tp = tp;
@@ -96,6 +107,11 @@ namespace io {
 
           levelNode = levelNode->NextSiblingElement("level");
           level++;
+        }
+        
+        if (levelNode && level == Class::MAX_LEVEL) {
+          //  Too many levels specified.  Print a warning.
+          writeToLog(MessageLevel::WARNING, "Class::Class():  Too many class stat blocks.  Ignoring remainder.");
         }
 
         /**

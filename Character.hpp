@@ -71,7 +71,7 @@ namespace io {
       void levelUp() {
         if (getClass()) {
           level++;
-          if (level >= 70) {
+          if (level > Class::MAX_LEVEL) {
             throw std::runtime_error("Character::levelUp:  Level exceeds 70.");
           }
 

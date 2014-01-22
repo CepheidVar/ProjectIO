@@ -48,13 +48,19 @@ namespace io {
 
     }
 
+    /**
+     * Returns the stat block of the class for the given level.  One indexed.
+     * @param level The class level to retrieve the stat block for.
+     * @return The stat block requested.
+     */
     StatBlock getStatsForLevel(const int16_t level) {
-      if (level >= Class::MAX_LEVEL) {
-        throw std::out_of_range("Class::getStatsForLevel");
+      if (level == 0 || level > Class::MAX_LEVEL) {
+        throw std::range_error("Class:getStatsForLevel():  Level out of range.");
       }
 
-      return stats[level];
+      return stats[level - 1];
     }
+    
     std::string getName() const {
       return name;
     }

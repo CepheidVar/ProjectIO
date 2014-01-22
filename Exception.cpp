@@ -40,6 +40,10 @@ namespace io {
         }
       }
 #else
+      /**
+       * Same as the Mac OS X reason, there's a bit of extra information that
+       * is unnecessary.  In this case, one extra stack frame.  Ignore it.
+       */
       for (uint32_t i = 1; i < frameCount; i++) {
         fprintf(stderr, "%s\n", frameStrs[i]);
       }

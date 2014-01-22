@@ -40,5 +40,14 @@
 			<destinationY>0</destinationY>
 			<direction>up</direction>
 		</stairs>
+
+		<stairs>
+			<x>21</x>
+			<y>17</y>
+			<destinationFacing>south</destinationFacing>
+			<destinationX>21</destinationX>
+			<destinationY>18</destinationY>
+			<direction>down</direction>
+		</stairs>
 	</objects>
 </floor>

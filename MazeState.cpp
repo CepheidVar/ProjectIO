@@ -297,8 +297,10 @@ namespace io {
       Map* newMap = maze->getFloor(newFloor);
       if (newMap->canEntityEnter(newX, newY)) {
         currentMap = newMap;
+        currentFloor = newFloor;
         player->setX(newX);
         player->setY(newY);
+        player->setFacing(stairs->getDestinationFacing());
       }
       else {
 

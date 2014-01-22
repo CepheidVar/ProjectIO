@@ -19,7 +19,6 @@
 #include "Log.hpp"
 #include <exception>
 #include <stdexcept>
-#include <iostream>
 
 using namespace tinyxml2;
 
@@ -83,7 +82,7 @@ namespace io {
                 throw std::runtime_error("Map::mapFromXML():  Could not parse Y value.");
               }
 
-              if (x < 0 || x >= Map::MAP_WIDTH || y < 0 || y >= Map::MAP_HEIGHT) {
+              if (x < 0 || x >= newMap->getWidth() || y < 0 || y >= newMap->getHeight()) {
                 throw std::out_of_range("Map::mapFromXML():  X or Y outside of map.");
               }
 
@@ -248,8 +247,9 @@ namespace io {
      */
     Image* m = ResourceManager::getInstance()->getResource(filename)->toImage();
     if (m) {
-      if (m->getWidth() == Map::MAP_WIDTH && m->getHeight() == Map::MAP_HEIGHT) {
-        newMap = new Map();
+      if (m->getWidth() <= Map::MAX_MAP_WIDTH &&
+          m->getHeight() <= Map::MAX_MAP_HEIGHT) {
+        newMap = new Map(m->getWidth(), m->getHeight());
         for (uint32_t y = 0; y < m->getHeight(); y++) {
           for (uint32_t x = 0; x < m->getWidth(); x++) {
             if (m->getPixel(x, y) == unfilled) {
@@ -262,7 +262,7 @@ namespace io {
         }
       }
       else {
-        throw std::runtime_error("Map::mapFromImage():  Map image dimensions are incorrect.");
+        throw std::range_error("Map::mapFromImage():  Map image dimensions out of range.");
       }
       
       delete m;

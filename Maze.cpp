@@ -18,7 +18,6 @@
 #include "Log.hpp"
 #include <exception>
 #include <stdexcept>
-#include <iostream>
 
 using namespace tinyxml2;
 
@@ -85,8 +84,8 @@ namespace io {
         //  In this case, we want up stairs.
         bool foundEntrance = false;
         bool multipleWarned = false;
-        for (int32_t y = 0; y < Map::MAP_HEIGHT; y++) {
-          for (int32_t x = 0; x < Map::MAP_WIDTH; x++) {
+        for (int32_t y = 0; y < curMap->getHeight(); y++) {
+          for (int32_t x = 0; x < curMap->getWidth(); x++) {
             Activatable* act = curMap->getActivatable(x, y);
             if (act) {
               Stairs* stairs = act->asStairs();
@@ -121,7 +120,6 @@ namespace io {
                     writeToLog(MessageLevel::WARNING, "Maze::scanForEntrances():  Entrance as specified would place player in solid wall.");
                   }
                   else {
-                    std::cout << i << "/" << dstX << "/" << dstY << "/" << (int)dstFacing << std::endl;
                     mazeEntrance = Entrance(i, dstX, dstY, dstFacing);
                     foundEntrance = true;
                   }

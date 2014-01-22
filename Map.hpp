@@ -139,11 +139,19 @@ namespace io {
    */
   class Map {
   public:
-    const static int32_t MAP_WIDTH = 35;
-    const static int32_t MAP_HEIGHT = 30;
-
-    Map() {
-      cells = new MapCell[Map::MAP_WIDTH * Map::MAP_HEIGHT];
+    const static int32_t MAX_MAP_WIDTH = 128;
+    const static int32_t MAX_MAP_HEIGHT = 128;
+    
+    Map(const int32_t width, const int32_t height) {
+      if (width <= 0|| height <= 0 || width > MAX_MAP_WIDTH ||
+          height > MAX_MAP_HEIGHT) {
+        throw std::range_error("Map::Map():  Map dimensions are out of range.");
+      }
+      
+      cells = new MapCell[width * height];
+      
+      this->width = width;
+      this->height = height;
     }
 
     ~Map() {
@@ -162,6 +170,14 @@ namespace io {
       }
       
       return nullptr;
+    }
+    
+    int32_t getWidth() const {
+      return width;
+    }
+    
+    int32_t getHeight() const {
+      return height;
     }
 
     bool isSolid(const int32_t x, const int32_t y) {
@@ -184,13 +200,15 @@ namespace io {
     Map& operator=(const Map&) = delete;
     
     MapCell* cells;
+    int32_t width;
+    int32_t height;
     
-    MapCell* getCell(int32_t x, int32_t y) {
-      if (x < 0 || y < 0 || x >= Map::MAP_WIDTH || y >= Map::MAP_HEIGHT) {
+    MapCell* getCell(const int32_t x, const int32_t y) {
+      if (x < 0 || y < 0 || x >= getWidth() || y >= getHeight()) {
         return nullptr;
       }
       
-      return (cells + (y * Map::MAP_WIDTH) + x);
+      return (cells + (y * getWidth()) + x);
     }
   };
 }

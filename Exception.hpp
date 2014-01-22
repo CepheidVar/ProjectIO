@@ -3,6 +3,7 @@
 
 #include <execinfo.h>
 #include <string>
+#include <cstdlib>
 
 namespace io {
 

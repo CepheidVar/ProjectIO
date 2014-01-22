@@ -20,3 +20,16 @@ various resources into their own subfolders, and then move the data folder
 to it's own subfolder to indicate the "base" testing game.
 
 In short, there's a lot to do.
+
+REQUIREMENTS
+
+The project makes use of the following libraries, which must be installed:
+
+- SDL2 2.0.1(www.libsdl.org)
+- FreeType 2 2.5.2(www.freetype.org)
+- Boost C++ Libraries 1.55(www.boost.org)
+- zlib 1.2.8(www.zlib.net)
+- libpng 1.6.8(www.libpng.org)
+- OpenGL Extension Wrangler 1.10.0(glew.sourceforge.net)
+
+The project makes use of OpenGL 2.1 minimum.

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cxxabi.h>
+#include <cstdlib>
 #include "Exception.hpp"
 #include "StringTokenizer.hpp"
 

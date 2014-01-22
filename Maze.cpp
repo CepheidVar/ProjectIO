@@ -42,7 +42,7 @@ namespace io {
 
         newMaze = new Maze();
 
-        while (floorElement) {
+        while (floorElement && newMaze->getFloorCount() < Maze::MAX_FLOORS) {
           if (!floorElement->GetText()) {
             throw std::runtime_error("Maze::mazeFromXML():  Empty floor element.");
           }
@@ -56,6 +56,13 @@ namespace io {
 
           floorElement = floorElement->NextSiblingElement("floor");
         }
+        
+        if (floorElement) {
+          //  There was more than MAX_FLOORS floors.  Best report it.
+          writeToLog(MessageLevel::WARNING, "Maze::mazeFromXML():  More than 256 floors specified for the maze.  Stop this madness!");
+        }
+        
+        newMaze->scanForEntrances();
       }
     }
     catch (std::exception& e) {
@@ -68,5 +75,66 @@ namespace io {
     }
 
     return newMaze;
+  }
+  
+  void Maze::scanForEntrances() {
+    for (uint32_t i = 1; i <= getFloorCount(); i++) {
+      Map* curMap = getFloor(i);
+      
+      if (i == 1) {
+        //  In this case, we want up stairs.
+        bool foundEntrance = false;
+        bool multipleWarned = false;
+        for (int32_t y = 0; y < Map::MAP_HEIGHT; y++) {
+          for (int32_t x = 0; x < Map::MAP_WIDTH; x++) {
+            Activatable* act = curMap->getActivatable(x, y);
+            if (act) {
+              Stairs* stairs = act->asStairs();
+              if (stairs && stairs->getDirection() == StairDirection::UP) {
+                Facing dstFacing = stairs->getDestinationFacing();
+                
+                //  Adjust the position so that when the player enters, they're
+                //  facing the right direction, and in the right position.
+                int32_t dstX = x;
+                int32_t dstY = y;
+                switch(dstFacing) {
+                case Facing::NORTH:
+                  dstY--;
+                  break;
+                case Facing::EAST:
+                  dstX++;
+                  break;
+                case Facing::SOUTH:
+                  dstY++;
+                  break;
+                case Facing::WEST:
+                  dstX--;
+                  break;
+                }
+
+                if (foundEntrance && !multipleWarned) {
+                  writeToLog(MessageLevel::WARNING, "Maze::scanForEntrances():  Multiple up stairs found on floor of maze.");
+                  multipleWarned = true;
+                }
+                else {
+                  if (!curMap->canEntityEnter(dstX, dstY)) {
+                    writeToLog(MessageLevel::WARNING, "Maze::scanForEntrances():  Entrance as specified would place player in solid wall.");
+                  }
+                  else {
+                    std::cout << i << "/" << dstX << "/" << dstY << "/" << (int)dstFacing << std::endl;
+                    mazeEntrance = Entrance(i, dstX, dstY, dstFacing);
+                    foundEntrance = true;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      else {
+        //  Otherwise, we're looking for geomagnetic poles.  This is currently
+        //  not implemented.  Mostly because geopoles don't exist.
+      }
+    }
   }
 }

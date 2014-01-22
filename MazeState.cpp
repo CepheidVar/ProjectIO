@@ -18,6 +18,7 @@
 #include "Common.hpp"
 #include "Utility.hpp"
 #include "Log.hpp"
+#include <stdexcept>
 
 namespace io {
   MazeState::MazeState(StateMachine* stateMachine, Player* player) {
@@ -25,8 +26,7 @@ namespace io {
 
     maze = Maze::mazeFromXML("data/maze.xml");
     if (!maze || maze->getFloorCount() == 0) {
-      writeToLog(MessageLevel::ERROR, "Could not load maze.\n");
-      exit(1);
+      throw std::runtime_error("Maze::Maze():  Could not load maze.");
     }
 
     currentMap = maze->getFloor(1);
@@ -110,9 +110,11 @@ namespace io {
   }
 
   void MazeState::onActivate() {
-    player->setX(18);
-    player->setY(29);
-    player->setFacing(Facing::NORTH);
+    Entrance e = maze->getMazeEntrance();
+    
+    player->setX(e.getX());
+    player->setY(e.getY());
+    player->setFacing(e.getFacing());
 
     cameraX = 0.0f;
     cameraY = 0.0f;
@@ -141,7 +143,7 @@ namespace io {
       break;
     }
     
-    Activatable* act = currentMap->getCell(lookX, lookY).getActivatable();
+    Activatable* act = currentMap->getActivatable(lookX, lookY);
 
     if (act) {
       if (act->asDoor()) {
@@ -187,7 +189,7 @@ namespace io {
       }
     }
     
-    if (currentMap->canEntityEnterCell(newX, newY)) {
+    if (currentMap->canEntityEnter(newX, newY)) {
       player->setX(newX);
       player->setY(newY);
     }
@@ -247,7 +249,7 @@ namespace io {
       break;
     }
 
-    if (currentMap->canEntityEnterCell(newX, newY)) {
+    if (currentMap->canEntityEnter(newX, newY)) {
       player->setX(newX);
       player->setY(newY);
     }
@@ -293,7 +295,7 @@ namespace io {
     
     if (newFloor > 0) {
       Map* newMap = maze->getFloor(newFloor);
-      if (newMap->canEntityEnterCell(newX, newY)) {
+      if (newMap->canEntityEnter(newX, newY)) {
         currentMap = newMap;
         player->setX(newX);
         player->setY(newY);
@@ -330,7 +332,7 @@ namespace io {
       break;
     }
 
-    if (currentMap->canEntityEnterCell(newX, newY)) {
+    if (currentMap->canEntityEnter(newX, newY)) {
       player->setX(newX);
       player->setY(newY);
     }
@@ -363,7 +365,7 @@ namespace io {
       break;
     }
 
-    if (currentMap->canEntityEnterCell(newX, newY)) {
+    if (currentMap->canEntityEnter(newX, newY)) {
       player->setX(newX);
       player->setY(newY);
     }

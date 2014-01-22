@@ -30,22 +30,20 @@ namespace io {
    */
   class MapCell {
   public:
-    MapCell() {
-      setActivatable(nullptr);
-      setCellCeiling(0);
-      setCellFloor(0);
-      setEastWall(0);
-      setNorthWall(0);
-      setSouthWall(0);
-      setWestWall(0);
-      setSolid(true);
+    MapCell() { }
+    
+    ~MapCell() {
+      if (activatable) {
+        delete activatable;
+        activatable = nullptr;
+      }
     }
 
     Activatable* getActivatable() const {
       return activatable;
     }
 
-    bool canEntityEnterCell() const {
+    bool canEntityEnter() const {
       if (getActivatable()) {
         return !(isSolid() || getActivatable()->isSolid());
       }
@@ -53,12 +51,12 @@ namespace io {
       return !isSolid();
     }
 
-    uint8_t getCellCeiling() const {
-      return cellCeiling;
+    uint8_t getCeiling() const {
+      return ceiling;
     }
 
-    uint8_t getCellFloor() const {
-      return cellFloor;
+    uint8_t getFloor() const {
+      return floor;
     }
 
     uint8_t getEastWall() const {
@@ -81,16 +79,26 @@ namespace io {
       return solid;
     }
 
+    /**
+     * Sets the object associated with the cell.  The cell takes ownership of
+     * the object and is responsible for deleting it.
+     * @param activatable The object to assign to the cell.
+     */
     void setActivatable(Activatable* activatable) {
+      if (this->activatable) {
+        delete this->activatable;
+        this->activatable = nullptr;
+      }
+      
       this->activatable = activatable;
     }
 
-    void setCellCeiling(const uint8_t cellCeiling) {
-      this->cellCeiling = cellCeiling;
+    void setCeiling(const uint8_t cellCeiling) {
+      this->ceiling = cellCeiling;
     }
 
-    void setCellFloor(const uint8_t cellFloor) {
-      this->cellFloor = cellFloor;
+    void setFloor(const uint8_t cellFloor) {
+      this->floor = cellFloor;
     }
 
     void setEastWall(const uint8_t eastWall) {
@@ -113,19 +121,21 @@ namespace io {
       this->solid = solid;
     }
   private:
-    Activatable* activatable;
-    uint8_t cellCeiling;
-    uint8_t cellFloor;
-    uint8_t eastWall;
-    uint8_t northWall;
-    uint8_t southWall;
-    uint8_t westWall;
-    bool solid;
+    MapCell(const MapCell&) = delete;
+    MapCell& operator=(const MapCell&) = delete;
+    
+    Activatable* activatable = nullptr;
+    uint8_t ceiling = 0;
+    uint8_t floor = 0;
+    uint8_t eastWall = 0;
+    uint8_t northWall = 0;
+    uint8_t southWall = 0;
+    uint8_t westWall = 0;
+    bool solid = true;
   };
 
   /**
-   * Represents a map.  Currently hard-coded to 35 * 30 cells in size with a
-   * border of 1 cell on each side.
+   * Represents a map.  Currently hard-coded to 35 * 30 cells in size.
    */
   class Map {
   public:
@@ -133,57 +143,54 @@ namespace io {
     const static int32_t MAP_HEIGHT = 30;
 
     Map() {
+      cells = new MapCell[Map::MAP_WIDTH * Map::MAP_HEIGHT];
     }
 
     ~Map() {
-      for (int32_t y = 0; y < Map::MAP_HEIGHT; y++) {
-        for (int32_t x = 0; x < Map::MAP_WIDTH; x++) {
-          Activatable* cellActivatable = getCell(x, y).getActivatable();
-          if (cellActivatable) {
-            delete cellActivatable;
-          }
-        }
-      }
+      delete [] cells;
+      cells = nullptr;
     }
 
     static Map* mapFromXML(const std::string& filename);
     static Map* mapFromImage(const std::string& filename);
     
     void draw(Graphics* g, const int32_t x, const int32_t y);
-
-    MapCell& getCell(int32_t x, int32_t y) {
-      clampCoordinates(x, y);
-
-      return cells[y][x];
+    
+    Activatable* getActivatable(const int32_t x, const int32_t y) {
+      if (getCell(x, y)) {
+        return getCell(x, y)->getActivatable();
+      }
+      
+      return nullptr;
     }
 
-    bool canEntityEnterCell(const int32_t x, const int32_t y) {
-      return getCell(x, y).canEntityEnterCell();
+    bool isSolid(const int32_t x, const int32_t y) {
+      if (getCell(x, y)) {
+        return getCell(x, y)->isSolid();
+      }
+      
+      return true;
+    }
+    
+    bool canEntityEnter(const int32_t x, const int32_t y) {
+      if (getCell(x, y)) {
+        return getCell(x, y)->canEntityEnter();
+      }
+      
+      return false;
     }
   private:
-    //  There is a border around the map.
-    MapCell cells[MAP_HEIGHT + 2][MAP_WIDTH + 2];
-
-    void clampCoordinates(int32_t& x, int32_t& y) {
-      if (x < 0) {
-        x = 0;
+    Map(const Map&) = delete;
+    Map& operator=(const Map&) = delete;
+    
+    MapCell* cells;
+    
+    MapCell* getCell(int32_t x, int32_t y) {
+      if (x < 0 || y < 0 || x >= Map::MAP_WIDTH || y >= Map::MAP_HEIGHT) {
+        return nullptr;
       }
-
-      if (x >= Map::MAP_WIDTH + 2) {
-        x = (Map::MAP_WIDTH + 2) - 1;
-      }
-
-      if (y < 0) {
-        y = 0;
-      }
-
-      if (y >= Map::MAP_HEIGHT + 2) {
-        y = (Map::MAP_HEIGHT + 2) - 1;
-      }
-    }
-
-    bool isCellSolid(const int32_t x, const int32_t y) {
-      return getCell(x, y).isSolid();
+      
+      return (cells + (y * Map::MAP_WIDTH) + x);
     }
   };
 }

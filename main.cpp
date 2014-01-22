@@ -24,7 +24,6 @@
 #include "ResourceManager.hpp"
 #include "Resource.hpp"
 #include "InputTranslator.hpp"
-#include "EditBox.hpp"
 
 using namespace io;
 
@@ -141,6 +140,7 @@ int main(int, char**) {
     SDL_GL_SwapWindow(win);
   }
 
+  delete game;
 
   return 0;
 }

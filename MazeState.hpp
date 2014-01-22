@@ -50,6 +50,9 @@ namespace io {
     void turnPlayerLeft();
     void turnPlayerRight();
   private:
+    MazeState(const MazeState&) = delete;
+    MazeState& operator=(const MazeState&);
+    
     uint32_t currentFloor;
     Map* currentMap;
     Maze* maze;

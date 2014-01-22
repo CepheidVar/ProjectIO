@@ -59,11 +59,13 @@ namespace io {
           throw std::runtime_error("Map::mapFromXML():  Unable to load map image.");
         }
 
+        //  Start parsing any objects that exist.
         if (objectsElement) {
           XMLNode* curNode = objectsElement->FirstChild();
           while (curNode) {
             XMLElement* element = curNode->ToElement();
             if (element) {
+              //  All objects have an X/Y element guaranteed.
               XMLElement* xElement = element->FirstChildElement("x");
               XMLElement* yElement = element->FirstChildElement("y");
 
@@ -107,7 +109,7 @@ namespace io {
                 Door* d = new Door();
                 d->setOrientation(orientationEnum);
 
-                newMap->getCell(x + 1, y + 1).setActivatable(d);
+                newMap->getCell(x, y)->setActivatable(d);
               }
               else if (name.compare("secretDoor") == 0) {
                 XMLElement* direction = element->FirstChildElement("direction");
@@ -142,7 +144,7 @@ namespace io {
                 SecretDoor* sd = new SecretDoor();
                 sd->setDirection(directionEnum);
 
-                newMap->getCell(x + 1, y + 1).setActivatable(sd);
+                newMap->getCell(x, y)->setActivatable(sd);
               }
               else if (name.compare("stairs") == 0) {
                 XMLElement* dir = element->FirstChildElement("direction");
@@ -151,21 +153,21 @@ namespace io {
                 XMLElement* dstFacing = element->FirstChildElement("destinationFacing");
                 
                 if (!dir || !dir->GetText()) {
-                  
+                  throw std::runtime_error("Map::mapFromXML():  Empty or missing stairs direction.");
                 }
                 
                 if (!dstFacing || !dstFacing->GetText()) {
-                  
+                  throw std::runtime_error("Map::mapFromXML():  Empty or missing stairs destination facing.");
                 }
                 
                 int32_t dstIntX = 0;
                 if (!dstX || dstX->QueryIntText(&dstIntX) != XML_SUCCESS) {
-                  
+                  throw std::runtime_error("Map::mapFromXML():  Could not parse stairs destination X.");
                 }
                 
                 int32_t dstIntY = 0;
                 if (!dstY || dstY->QueryIntText(&dstIntY) != XML_SUCCESS) {
-                  
+                  throw std::runtime_error("Map::mapFromXML():  Could not parse stairs destination Y.");
                 }
                 
                 StairDirection dirStairs = StairDirection::UP;
@@ -177,7 +179,7 @@ namespace io {
                   dirStairs = StairDirection::DOWN;
                 }
                 else {
-                  
+                  throw std::runtime_error("Map::mapFromXML():  Unknown stairs direction specified.");
                 }
                 
                 Facing stairsFacing = Facing::NORTH;
@@ -195,7 +197,7 @@ namespace io {
                   stairsFacing = Facing::WEST;
                 }
                 else {
-                  
+                  throw std::runtime_error("Map::mapFromXML():  Unknown stairs destination facing specified.");
                 }
                 
                 Stairs* s = new Stairs();
@@ -204,7 +206,7 @@ namespace io {
                 s->setDirection(dirStairs);
                 s->setDestinationFacing(stairsFacing);
                 
-                newMap->getCell(x + 1, y + 1).setActivatable(s);
+                newMap->getCell(x, y)->setActivatable(s);
               }
               else {
                 throw std::runtime_error("Map::mapFromXML():  Unknown object type.");
@@ -215,8 +217,11 @@ namespace io {
           }
         }
         else {
-          writeToLog(MessageLevel::WARNING, "Map::mapFromXM()L:  Missing objects element.  Possibly a mistake?");
+          writeToLog(MessageLevel::WARNING, "Map::mapFromXML():  Missing objects element.  Possibly a mistake?");
         }
+      }
+      else {
+        writeToLog(MessageLevel::ERROR, "Map::mapFromXML():  Error parsing floor file.");
       }
     }
     catch (std::exception& e) {
@@ -247,16 +252,19 @@ namespace io {
         newMap = new Map();
         for (uint32_t y = 0; y < m->getHeight(); y++) {
           for (uint32_t x = 0; x < m->getWidth(); x++) {
-            //  We offset by 1 to account for the border.
             if (m->getPixel(x, y) == unfilled) {
-              newMap->getCell(x + 1, y + 1).setSolid(false);
+              newMap->getCell(x, y)->setSolid(false);
             }
             else {
-              newMap->getCell(x + 1, y + 1).setSolid(true);
+              newMap->getCell(x, y)->setSolid(true);
             }
           }
         }
       }
+      else {
+        throw std::runtime_error("Map::mapFromImage():  Map image dimensions are incorrect.");
+      }
+      
       delete m;
     }
     
@@ -266,9 +274,9 @@ namespace io {
   void Map::draw(Graphics* g, const int32_t cx, const int32_t cy) {
     for (int32_t y = -MAX_DISTANCE; y < MAX_DISTANCE; y++) {
       for (int32_t x = -MAX_DISTANCE; x < MAX_DISTANCE; x++) {
-        if (!isCellSolid(cx + x, cy + y)) {
-          g->drawFloorTile(x, y, 0);
-          g->drawCeilingTile(x, y, 0);
+        if (!isSolid(cx + x, cy + y)) {
+          g->drawFloorTile(x, y, getCell(cx + x, cy + y)->getFloor());
+          g->drawCeilingTile(x, y, getCell(cx + x, cy + y)->getCeiling());
 
           /*
            * Remember, the get*Wall() methods return the wall you'd see if you
@@ -278,24 +286,29 @@ namespace io {
            */
 
           uint8_t wallID;
-          if (isCellSolid(cx + x, cy + y - 1)) {
-            wallID = getCell(cx + x, cy + y - 1).getSouthWall();
+          if (isSolid(cx + x, cy + y - 1)) {
+            wallID = getCell(cx + x, cy + y - 1)->getSouthWall();
             g->drawWallTile(x, y, Facing::NORTH, wallID);
           }
 
-          if (isCellSolid(cx + x + 1, cy + y)) {
-            wallID = getCell(cx + x + 1, cy + y).getWestWall();
+          if (isSolid(cx + x + 1, cy + y)) {
+            wallID = getCell(cx + x + 1, cy + y)->getWestWall();
             g->drawWallTile(x, y, Facing::EAST, wallID);
           }
 
-          if (isCellSolid(cx + x, cy + y + 1)) {
-            wallID = getCell(cx + x, cy + y + 1).getNorthWall();
+          if (isSolid(cx + x, cy + y + 1)) {
+            wallID = getCell(cx + x, cy + y + 1)->getNorthWall();
             g->drawWallTile(x, y, Facing::SOUTH, wallID);
           }
 
-          if (isCellSolid(cx + x - 1, cy + y)) {
-            wallID = getCell(cx + x - 1, cy + y).getEastWall();
+          if (isSolid(cx + x - 1, cy + y)) {
+            wallID = getCell(cx + x - 1, cy + y)->getEastWall();
             g->drawWallTile(x, y, Facing::WEST, wallID);
+          }
+          
+          Activatable* act = getActivatable(cx + x, cy + y);
+          if (act) {
+            act->draw(g);
           }
         }
       }

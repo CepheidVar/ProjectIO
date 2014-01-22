@@ -27,8 +27,7 @@ namespace io {
   
   class Activatable {
   public:
-    Activatable() {
-    }
+    Activatable() { }
 
     virtual ~Activatable() { }
 
@@ -50,6 +49,8 @@ namespace io {
       return true;
     }
   private:
+    Activatable(const Activatable&) = delete;
+    Activatable& operator=(const Activatable&) = delete;
   };
 
   enum class Orientation : int8_t {
@@ -59,42 +60,11 @@ namespace io {
 
   class Door : public Activatable {
   public:
-    Door() {
-      orientation = Orientation::HORIZONTAL;
-    }
+    Door() { }
 
     virtual ~Door() {
 
     }
-    
-    /*
-    virtual void activate(Entity* activator) {
-      if (getOrientation() == Orientation::VERTICAL) {
-        switch(activator->getFacing()) {
-        case Facing::NORTH:
-          activator->setY(activator->getY() - 2);
-          break;
-        case Facing::SOUTH:
-          activator->setY(activator->getY() + 2);
-          break;
-        default:
-          break;
-        }
-      }
-      else {
-        switch(activator->getFacing()) {
-        case Facing::EAST:
-          activator->setX(activator->getX() + 2);
-          break;
-        case Facing::WEST:
-          activator->setX(activator->getX() - 2);
-          break;
-        default:
-          break;
-        }
-      }
-    }
-    */
     
     virtual Door* asDoor() {
       return this;
@@ -108,7 +78,10 @@ namespace io {
       this->orientation = orientation;
     }
   private:
-    Orientation orientation;
+    Door(const Door&) = delete;
+    Door& operator=(const Door&) = delete;
+    
+    Orientation orientation = Orientation::HORIZONTAL;
   };
 
   enum class SecretDoorDirection : int8_t {
@@ -122,64 +95,9 @@ namespace io {
 
   class SecretDoor : public Activatable {
   public:
-    SecretDoor() {
-      setDirection(SecretDoorDirection::NORTH);
-    }
+    SecretDoor() { }
 
-    virtual ~SecretDoor() {
-
-    }
-
-    /*
-    virtual void activate(Entity* activator) {
-      switch(getDirection()) {
-      case SecretDoorDirection::NORTH:
-        if (activator->getFacing() == Facing::NORTH) {
-          activator->setY(activator->getY() - 2);
-        }
-        break;
-      case SecretDoorDirection::EAST:
-        if (activator->getFacing() == Facing::EAST) {
-          activator->setX(activator->getX() + 2);
-        }
-        break;
-      case SecretDoorDirection::SOUTH:
-        if (activator->getFacing() == Facing::SOUTH) {
-          activator->setY(activator->getY() + 2);
-        }
-        break;
-      case SecretDoorDirection::WEST:
-        if (activator->getFacing() == Facing::WEST) {
-          activator->setX(activator->getX() - 2);
-        }
-        break;
-      case SecretDoorDirection::NORTH_SOUTH:
-        switch (activator->getFacing()) {
-        case Facing::NORTH:
-          activator->setY(activator->getY() - 2);
-          break;
-        case Facing::SOUTH:
-          activator->setY(activator->getY() + 2);
-          break;
-        default:
-          break;
-        }
-        break;
-      case SecretDoorDirection::EAST_WEST:
-        switch(activator->getFacing()) {
-        case Facing::EAST:
-          activator->setX(activator->getX() + 2);
-          break;
-        case Facing::WEST:
-          activator->setX(activator->getX() - 2);
-          break;
-        default:
-          break;
-        }
-        break;
-      }
-    }
-    */
+    virtual ~SecretDoor() { }
     
     virtual SecretDoor* asSecretDoor() {
       return this;
@@ -193,7 +111,10 @@ namespace io {
       this->direction = direction;
     }
   private:
-    SecretDoorDirection direction;
+    SecretDoor(const SecretDoor&) = delete;
+    SecretDoor& operator=(const SecretDoor&) = delete;
+    
+    SecretDoorDirection direction = SecretDoorDirection::NORTH;
   };
 
   enum class StairDirection {
@@ -203,22 +124,9 @@ namespace io {
 
   class Stairs : public Activatable {
   public:
-    Stairs() {
-      setDestinationFacing(Facing::NORTH);
-      setDestinationX(0);
-      setDestinationY(0);
-      setDirection(StairDirection::UP);
-    }
+    Stairs() { }
 
-    virtual ~Stairs() {
-
-    }
-    
-    /*
-    virtual void activate(Entity* activator) {
-
-    }
-    */
+    virtual ~Stairs() { }
     
     virtual Stairs* asStairs() {
       return this;
@@ -257,10 +165,13 @@ namespace io {
     }
 
   private:
-    Facing destinationFacing;
-    int32_t destinationX;
-    int32_t destinationY;
-    StairDirection direction;
+    Stairs(const Stairs&) = delete;
+    Stairs& operator=(const Stairs&) = delete;
+    
+    Facing destinationFacing = Facing::NORTH;
+    int32_t destinationX = 0;
+    int32_t destinationY = 0;
+    StairDirection direction = StairDirection::UP;
   };
 }
 

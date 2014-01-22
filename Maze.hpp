@@ -22,13 +22,67 @@
 
 namespace io {
   /**
+   * Represents an entrance point into the maze.  This can be on the first
+   * floor, or on a floor with a geomagnetic pole.
+   */
+  class Entrance {
+  public:
+    Entrance() { }
+    
+    Entrance(const uint32_t floor, const int32_t x, const int32_t y,
+             Facing facing) {
+      this->facing = facing;
+      this->floor = floor;
+      this->x = x;
+      this->y = y;
+    }
+    
+    Entrance(const Entrance& e) {
+      this->facing = e.getFacing();
+      this->floor = e.getFloor();
+      this->x = e.getX();
+      this->y = e.getY();
+    }
+    
+    Entrance& operator=(const Entrance& e) {
+      if (this != &e) {
+        this->facing = e.getFacing();
+        this->floor = e.getFloor();
+        this->x = e.getX();
+        this->y = e.getY();
+      }
+      
+      return *this;
+    }
+    
+    Facing getFacing() const {
+      return facing;
+    }
+    
+    uint32_t getFloor() const {
+      return floor;
+    }
+    
+    int32_t getX() const {
+      return x;
+    }
+    
+    int32_t getY() const {
+      return y;
+    }
+  private:
+    Facing facing = Facing::NORTH;
+    uint32_t floor = 0;
+    int32_t x = 0;
+    int32_t y = 0;
+  };
+  
+  /**
    * Represents a multi-floor maze.  Not much to say about it.
    */
   class Maze {
   public:
-    Maze() {
-
-    }
+    Maze() { }
 
     static Maze* mazeFromXML(const std::string& filename);
 
@@ -51,8 +105,20 @@ namespace io {
     uint32_t getFloorCount() const {
       return floors.size();
     }
+    
+    Entrance getMazeEntrance() const {
+      return mazeEntrance;
+    }
   private:
+    const static uint16_t MAX_FLOORS = 256;
+    
+    Maze(const Maze&) = delete;
+    Maze& operator=(const Maze&) = delete;
+    
     std::vector<Map*> floors;
+    Entrance mazeEntrance;
+    
+    void scanForEntrances();
   };
 }
 

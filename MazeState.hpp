@@ -12,14 +12,15 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
-*/
+ */
 #ifndef MazeStateHPP
 #define MazeStateHPP
 
 #include <cstdint>
 #include "State.hpp"
-#include "Map.hpp"
+#include "Maze.hpp"
 #include "StateMachine.hpp"
+#include "Player.hpp"
 
 namespace io {
   enum class MazeAnimationState {
@@ -27,11 +28,12 @@ namespace io {
     TURNING_RIGHT,
     MOVING_FORWARD,
     MOVING_BACKWARD,
+    NONE
   };
 
   class MazeState : public State {
   public:
-    MazeState(StateMachine* stateMachine);
+    MazeState(StateMachine* stateMachine, Player* player);
     virtual ~MazeState();
 
     virtual void tick();
@@ -39,16 +41,22 @@ namespace io {
     virtual void handleInputEvent(const InputEvent& event);
     virtual void onActivate();
 
+    void activateActivatable();
+    void activateDoor(Door* door);
+    void activateSecretDoor(SecretDoor* secretDoor);
+    void activateStairs(Stairs* stairs);
     void movePlayerForward();
     void movePlayerBackward();
     void turnPlayerLeft();
     void turnPlayerRight();
   private:
+    MazeState(const MazeState&) = delete;
+    MazeState& operator=(const MazeState&);
+    
     uint32_t currentFloor;
     Map* currentMap;
-    Facing playerFacing;
-    int32_t playerX;
-    int32_t playerY;
+    Maze* maze;
+    Player* player;
     StateMachine* stateMachine;
 
     bool inputDisabled;

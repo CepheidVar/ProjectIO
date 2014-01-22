@@ -1,0 +1,4 @@
+<maze>
+	<floor>data/floors/floor1.xml</floor>
+	<floor>data/floors/floor2.xml</floor>
+</maze>

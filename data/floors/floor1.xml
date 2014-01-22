@@ -1,0 +1,53 @@
+<floor>
+	<title>The Floor of Testing</title>
+	<image>data/floors/floor1.png</image>
+	<objects>
+		<door>
+			<x>17</x>
+			<y>26</y>
+			<orientation>vertical</orientation>
+		</door>
+		
+		<door>
+			<x>19</x>
+			<y>24</y>
+			<orientation>horizontal</orientation>
+		</door>
+		
+		<secretDoor>
+			<x>17</x>
+			<y>22</y>
+			<direction>north-south</direction>
+		</secretDoor>
+		
+		<secretDoor>
+			<x>19</x>
+			<y>20</y>
+			<direction>east</direction>
+		</secretDoor>
+		
+		<secretDoor>
+			<x>21</x>
+			<y>22</y>
+			<direction>south</direction>
+		</secretDoor>
+
+		<stairs>
+			<x>17</x>
+			<y>28</y>
+			<destinationFacing>north</destinationFacing>
+			<destinationX>0</destinationX>
+			<destinationY>0</destinationY>
+			<direction>up</direction>
+		</stairs>
+
+		<stairs>
+			<x>21</x>
+			<y>17</y>
+			<destinationFacing>south</destinationFacing>
+			<destinationX>21</destinationX>
+			<destinationY>18</destinationY>
+			<direction>down</direction>
+		</stairs>
+	</objects>
+</floor>

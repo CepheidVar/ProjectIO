@@ -24,7 +24,6 @@
 #include "ResourceManager.hpp"
 #include "Resource.hpp"
 #include "InputTranslator.hpp"
-#include "EditBox.hpp"
 
 using namespace io;
 
@@ -46,8 +45,9 @@ int main(int, char**) {
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 2);
 
-  SDL_Window* win = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		  	  	    				 640, 480, SDL_WINDOW_OPENGL);
+  SDL_Window* win = SDL_CreateWindow("ProjectIO", SDL_WINDOWPOS_CENTERED,
+                                     SDL_WINDOWPOS_CENTERED,
+                                     640, 480, SDL_WINDOW_OPENGL);
 
   SDL_GLContext context = SDL_GL_CreateContext(win);
 
@@ -140,6 +140,7 @@ int main(int, char**) {
     SDL_GL_SwapWindow(win);
   }
 
+  delete game;
 
   return 0;
 }

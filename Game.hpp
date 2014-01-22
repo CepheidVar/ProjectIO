@@ -16,17 +16,13 @@
 #ifndef GameHPP
 #define GameHPP
 
-#include "Guild.hpp"
-#include "Party.hpp"
+#include "Player.hpp"
 #include "Graphics.hpp"
-#include "Screen.hpp"
 #include "StateMachine.hpp"
-#include "MazeState.hpp"
-#include "TownState.hpp"
+#include "State.hpp"
 #include "InputEvent.hpp"
 #include "ScreenManager.hpp"
 #include <cstdint>
-#include <stack>
 
 namespace io {
   class Game : public StateMachine {
@@ -61,13 +57,12 @@ namespace io {
       currentState->onActivate();
     }
   private:
-    ScreenManager* screenManager;
-    State* currentState;
-    Guild* guild;
-    MazeState* mazeState;
-    Party* party;
-    TownState* townState;
     GameState curGameState;
+    State* currentState;
+    State* mazeState;
+    Player* player;
+    ScreenManager* screenManager;
+    State* townState;
   };
 }
 

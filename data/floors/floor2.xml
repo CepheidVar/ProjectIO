@@ -1,0 +1,14 @@
+<floor>
+	<title>The Floor of Testing</title>
+	<image>data/floors/floor2.png</image>
+	<objects>
+		<stairs>
+			<x>21</x>
+			<y>17</y>
+			<destinationFacing>south</destinationFacing>
+			<destinationX>21</destinationX>
+			<destinationY>18</destinationY>
+			<direction>up</direction>
+		</stairs>
+	</objects>
+</floor>

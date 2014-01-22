@@ -14,26 +14,35 @@
  *  limitations under the License.
 */
 #include "Game.hpp"
-#include "Utility.hpp"
+#include "MazeState.hpp"
+#include "TownState.hpp"
 
 namespace io {
   Game::Game() {
     screenManager = new ScreenManager();
-    guild = new Guild();
-    party = new Party();
+    player = new Player();
     currentState = nullptr;
     curGameState = GameState::MAZE;
-    mazeState = new MazeState(this);
-    townState = new TownState(this, screenManager, guild, party);
+    mazeState = new MazeState(this, player);
+    townState = new TownState(this, screenManager, player->getGuild(),
+                              player->getParty());
 
     currentState = townState;
     townState->onActivate();
   }
   
   Game::~Game() {
-    if (mazeState) {
-      delete mazeState;
-    }
+    delete mazeState;
+    mazeState = nullptr;
+
+    delete townState;
+    townState = nullptr;
+
+    delete player;
+    player = nullptr;
+
+    delete screenManager;
+    screenManager = nullptr;
   }
   
   void Game::draw(Graphics* g) {

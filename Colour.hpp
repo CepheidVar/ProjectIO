@@ -17,20 +17,54 @@
 #define ColourHPP
 
 #include <cstdint>
+#include <cmath>
+#include <iostream>
 
 namespace io {
   class Colour {
   public:
-    Colour() {
-      setColour(0, 0, 0, 255);
-    }
+    Colour() { }
+    
+    /*
+     * Rather than a sized type, plain int is used here to ensure that all calls
+     * using plain integers are guaranteed to work regardless of what the
+     * underlying int type is(int32_t or int64_t, for example.)
+     */
 
-    Colour(const uint8_t r, const uint8_t g, const uint8_t b) {
+    explicit Colour(const int r, const int g, const int b)
+      : Colour() {
       setColour(r, g, b, 255);
     }
     
-    Colour(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) {
+    explicit Colour(const int r, const int g, const int b, const int a)
+      : Colour() {
       setColour(r, g, b, a);
+    }
+    
+    explicit Colour(const float r, const float g, const float b)
+      : Colour() {
+      setColour(std::round(255.0f * r),
+                std::round(255.0f * g),
+                std::round(255.0f * b),
+                255);
+    }
+    
+    explicit Colour(const float r, const float g, const float b,
+                    const float a) 
+      : Colour() {
+      setColour(std::round(255.0f * r),
+                std::round(255.0f * g),
+                std::round(255.0f * b),
+                std::round(255.0f * a));
+    }
+    
+    explicit Colour(const double r, const double g, const double b)
+      : Colour((float)r, (float)g, float(b)) {
+    }
+    
+    explicit Colour(const double r, const double g, const double b,
+                    const double a)
+      : Colour((float)r, (float)g, (float)b, (float)a) {
     }
     
     Colour(const Colour& rhs) {
@@ -66,13 +100,13 @@ namespace io {
       return this->r;
     }
   private:
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
+    uint8_t a = 255;
 
-    void setColour(const int32_t r, const int32_t g, const int32_t b, const int32_t a);
-    uint8_t clamp(const int32_t value);
+    void setColour(const int r, const int g, const int b, const int a);
+    uint8_t clamp(const int value);
   };
 }
 

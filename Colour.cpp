@@ -16,9 +16,11 @@
 #include "Colour.hpp"
 
 namespace io {
-  //  Simply clamps the value between 0 and 255.
-  //  I use int32_t to allow for saturating arithmetic.  It will break with large numbers.
-  uint8_t Colour::clamp(const int32_t value) {
+  /*  Simply clamps the value between 0 and 255.
+   *  I use int to allow for saturating arithmetic.  It will still break
+   *  with larger numbers, admittedly, but it's better than nothing at all.
+   */
+  uint8_t Colour::clamp(const int value) {
     if (value < 0) {
       return (uint8_t)0;
     }
@@ -30,7 +32,7 @@ namespace io {
     return (uint8_t)value;
   }
 
-  void Colour::setColour(const int32_t r, const int32_t g, const int32_t b, const int32_t a) {
+  void Colour::setColour(const int r, const int g, const int b, const int a) {
     this->r = this->clamp(r);
     this->g = this->clamp(g);
     this->b = this->clamp(b);

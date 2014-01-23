@@ -17,8 +17,8 @@
 #define ClassHPP
 
 #include <string>
-#include <stdexcept>
 #include "Resource.hpp"
+#include "Exception.hpp"
 
 namespace io {
   struct StatBlock {
@@ -43,10 +43,10 @@ namespace io {
   public:
     const static int16_t MAX_LEVEL = 70;
 
-    Class(const std::string& filename);
-    virtual ~Class() {
+    Class() { }
+    virtual ~Class() { }
 
-    }
+    static Class* classFromFile(const std::string& filename);
 
     /**
      * Returns the stat block of the class for the given level.  One indexed.
@@ -55,7 +55,7 @@ namespace io {
      */
     StatBlock getStatsForLevel(const int16_t level) {
       if (level == 0 || level > Class::MAX_LEVEL) {
-        throw std::range_error("Class:getStatsForLevel():  Level out of range.");
+        throw Exception("Level out of range.");
       }
 
       return stats[level - 1];
@@ -77,7 +77,7 @@ namespace io {
     std::string shortName;
 
     //  The stats are stored in the order they're read in.
-    StatBlock stats[Class::MAX_LEVEL];
+    StatBlock stats[Class::MAX_LEVEL] = { 0 };
   };
 }
 

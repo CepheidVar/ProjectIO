@@ -67,7 +67,7 @@ namespace io {
       }
 
       if (p.extension().compare(".class") == 0) {
-        Class* c = new Class(resource);
+        Class* c = Class::classFromFile(resource);
         classes.push_back(c);
         ret = c;
       }

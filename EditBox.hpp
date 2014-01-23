@@ -55,39 +55,9 @@ namespace io {
     std::string getText() {
       return text;
     }
-
-    virtual bool handleInputEvent(const InputEvent& event) {
-      char c;
-
-      if (event.getState() == InputEventState::DOWN) {
-        switch(event.getType()) {
-          case InputEventType::CANCEL:
-            break;
-          case InputEventType::ACCEPT:
-            textEntered();
-            break;
-          default:
-            c = event.getCharCode();
-            if (c != 0 && c != '\t') {
-              if (event.getCharCode() == 0x08) {
-                if (text.size() > 0) {
-                  text.resize(text.size() - 1);
-                }
-              }
-              else {
-                if (text.size() < getMaxLength()) {
-                  text.push_back(event.getCharCode());
-                  textChanged();
-                }
-              }
-            }
-            break;
-        }
-      }
-
-      return true;
-    }
-
+    
+    virtual bool handleInputEvent(const InputEvent& event);
+    
     void removeEditBoxActionListener(EditBoxActionListener* listener) {
       if (listener && hasEditBoxActionListener(listener)) {
         listeners.remove(listener);

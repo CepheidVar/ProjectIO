@@ -72,14 +72,14 @@ namespace io {
     void setVerticalAlignment(const VAlign verticalAlignment) {
       this->verticalAlignment = verticalAlignment;
     }
+  protected:
+    virtual void render(Graphics* g);
   private:
     Font* font;
     std::string text;
     
     HAlign horizontalAlignment;
     VAlign verticalAlignment;
-    
-    virtual void render(Graphics* g);
   };
 }
 

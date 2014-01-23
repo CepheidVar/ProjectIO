@@ -138,6 +138,8 @@ namespace io {
 
       validateWindow();
     }
+  protected:
+    virtual void render(Graphics* g);
   private:
     Menu(const Menu&);
     Menu& operator=(const Menu&);
@@ -187,8 +189,6 @@ namespace io {
         l->onMenuItemSelected(this, getSelectedMenuItem());
       }
     }
-
-    virtual void render(Graphics* g);
 
     void validateWindow() {
       if (getMenuSelection() < windowStart) {

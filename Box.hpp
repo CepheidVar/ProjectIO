@@ -23,7 +23,7 @@ namespace io {
   public:
     Box() {}
     virtual ~Box() {}
-  private:
+  protected:
     virtual void render(Graphics* g);
   };
 }

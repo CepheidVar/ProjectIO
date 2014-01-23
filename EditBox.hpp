@@ -108,6 +108,8 @@ namespace io {
     void setText(const std::string& text) {
       this->text = text;
     }
+  protected:
+    virtual void render(Graphics* g);
   private:
     Font* font;
     std::list<EditBoxActionListener*> listeners;
@@ -126,8 +128,6 @@ namespace io {
 
       return false;
     }
-
-    virtual void render(Graphics* g);
 
     void textEntered() {
       for (EditBoxActionListener* l : listeners) {

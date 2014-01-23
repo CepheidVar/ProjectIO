@@ -71,11 +71,11 @@ namespace io {
     void setSize(const float width, const float height) {
       setSize(Dimension(width, height));
     }
+  protected:
+    virtual void render(Graphics* g) = 0;
   private:
     Point position;
     Dimension size;
-    
-    virtual void render(Graphics* g) = 0;
   };
 }
 

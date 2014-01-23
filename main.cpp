@@ -17,7 +17,6 @@
 #include "Common.hpp"
 #include "Graphics.hpp"
 #include "Utility.hpp"
-#include <iostream>
 #include "Texture.hpp"
 #include "Log.hpp"
 #include "Game.hpp"
@@ -140,6 +139,8 @@ int main(int, char**) {
     SDL_GL_SwapWindow(win);
   }
 
+  ResourceManager::deleteInstance();
+  delete graphics;
   delete game;
 
   return 0;

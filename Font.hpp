@@ -36,10 +36,14 @@ namespace io {
    */
   class Font : public Resource {
     public:
-      Font(FT_Library library, const std::string& filename);
+      Font();
       virtual ~Font();
       
-      void drawText(const std::string& text, const Colour& colour = Colour(255, 255, 255, 255));
+      static Font* fontFromFile(const std::string& filename);
+      
+      void drawText(const std::string& text,
+                    const Colour& colour = Colour(255, 255, 255, 255));
+      
       uint32_t getPixelSize() const {
         return pixelSize;
       }
@@ -54,23 +58,20 @@ namespace io {
       const static uint32_t DEFAULT_PIXEL_SIZE = 12;
       const static uint32_t MAX_GLYPHS = 256;
       
-      Font(const Font&);
-      Font& operator=(const Font&);
+      Font(const Font&) = delete;
+      Font& operator=(const Font&) = delete;
 
       struct GlyphSet {
-          Texture* tex;
+          Texture* tex = nullptr;
           FontGlyph glyphs[Font::MAX_GLYPHS];
       };
 
       std::map<uint32_t, GlyphSet*> glyphSets;
 
-      GlyphSet* activeGlyphSet;
-      FT_Library library;
-      FT_Face face;
-      Mesh* mesh;
-      uint32_t pixelSize;
-
-      bool loadFont(const std::string& filename);
+      GlyphSet* activeGlyphSet = nullptr;;
+      FT_Face face = nullptr;
+      Mesh* mesh = new Mesh();
+      uint32_t pixelSize = 0;
   };
 }
 

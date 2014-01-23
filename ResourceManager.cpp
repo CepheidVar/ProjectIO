@@ -22,32 +22,39 @@
 #include "Font.hpp"
 #include "OBJModel.hpp"
 #include "Class.hpp"
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 using namespace boost::filesystem;
 
 namespace io {
-  FT_Library ftLib;
   ResourceManager* ResourceManager::instance = nullptr;
 
-  ResourceManager::ResourceManager() {
-    FT_Init_FreeType(&ftLib);
-  }
+  ResourceManager::ResourceManager() { }
 
   ResourceManager::~ResourceManager() {
     for (std::pair<std::string, Resource*> resource : resources) {
       delete resource.second;
     }
+    resources.clear();
+  }
+  
+  Resource* ResourceManager::getResource(const std::string& resource) {
+    Resource* ret = nullptr;
 
-    FT_Done_FreeType(ftLib);
+    if (resources.count(resource) > 0) {
+      ret = resources.at(resource);
+    }
+    else {
+      ret = loadResource(resource);
+      resources[resource] = ret;
+    }
+
+    return ret;
   }
 
   Resource* ResourceManager::loadResource(const std::string& resource) {
     Resource* ret = nullptr;
     path p(resource);
 
-    std::cout << "Loading " << resource << "...  ";
     if (exists(p) && is_regular_file(p)) {
       if (p.extension().compare(".png") == 0) {
         ret = loadPNG(resource);
@@ -55,7 +62,7 @@ namespace io {
 
       if (p.extension().compare(".ttf") == 0) {
         // For now, we only load fonts at 24 point.
-        Font* newFont = new Font(ftLib, resource);
+        Font* newFont = Font::fontFromFile(resource);
         newFont->setPixelSize(24);
         ret = newFont;
       }
@@ -71,13 +78,6 @@ namespace io {
         classes.push_back(c);
         ret = c;
       }
-    }
-
-    if (ret) {
-      std::cout << "Success." << std::endl;
-    }
-    else {
-      std::cout << "Failure." << std::endl;
     }
 
     return ret;

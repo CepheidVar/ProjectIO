@@ -264,8 +264,6 @@ namespace io {
       else {
         throw std::range_error("Map::mapFromImage():  Map image dimensions out of range.");
       }
-      
-      delete m;
     }
     
     return newMap;

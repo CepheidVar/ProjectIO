@@ -43,19 +43,7 @@ namespace io {
       return ResourceManager::instance;
     }
 
-    Resource* getResource(const std::string& resource) {
-      Resource* ret = nullptr;
-
-      if (resources.count(resource) > 0) {
-        ret = resources.at(resource);
-      }
-      else {
-        ret = loadResource(resource);
-        resources[resource] = ret;
-      }
-
-      return ret;
-    }
+    Resource* getResource(const std::string& resource);
   private:
     static ResourceManager* instance;
 
@@ -64,8 +52,8 @@ namespace io {
 
     ResourceManager();
     ~ResourceManager();
-    ResourceManager(const ResourceManager&);
-    ResourceManager& operator=(const ResourceManager&);
+    ResourceManager(const ResourceManager&) = delete;
+    ResourceManager& operator=(const ResourceManager&) = delete;
 
     Resource* loadResource(const std::string& resource);
   };

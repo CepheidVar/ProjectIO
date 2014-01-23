@@ -16,37 +16,76 @@
 #include <utility>
 #include <boost/filesystem.hpp>
 #include "Font.hpp"
-#include <ft2build.h>
-#include <iostream>
 #include "Utility.hpp"
 #include "Common.hpp"
+#include "Exception.hpp"
+#include "Log.hpp"
+#include <ft2build.h>
 #include FT_FREETYPE_H
 
 using namespace boost::filesystem;
 
 namespace io {
-  Font::Font(FT_Library library, const std::string& filename) {
-    this->library = library;
-    activeGlyphSet = nullptr;
-    face = nullptr;
-    mesh = new Mesh();
-    pixelSize = 0;
-
-    loadFont(filename);
-    setPixelSize(Font::DEFAULT_PIXEL_SIZE);
-  }
+  /*
+   * There's refcounting functionality in FreeType, sure, but the documentation
+   * isn't too clear on how it works.  So I just implement a basic counter here.
+   */
+  FT_Library gLibrary = nullptr;
+  uint32_t gLibraryRefCount = 0;
+  
+  static void allocFTLibrary();
+  static void deallocFTLibrary();
+  
+  Font::Font() { }
   
   Font::~Font() {
     if (face) {
       FT_Done_Face(face);
+      face = nullptr;
     }
 
     for (std::pair<uint32_t, GlyphSet*> glyphSet : glyphSets) {
       delete glyphSet.second->tex;
       delete glyphSet.second;
     }
+    glyphSets.clear();
+    
+    deallocFTLibrary();
+  }
+  
+  Font* Font::fontFromFile(const std::string& filename) {
+    allocFTLibrary();
+    
+    Font* newFont = nullptr;
+    try {
+      path p(filename);
+      if (!exists(p) || !is_regular_file(p)) {
+        throw Exception("Could not open font file.");
+      }
+      
+      newFont = new Font();
+      if (FT_New_Face(gLibrary, filename.c_str(), 0, &newFont->face) != 0) {
+        throw Exception("Unable to load font file.");
+      }
+
+      newFont->setPixelSize(Font::DEFAULT_PIXEL_SIZE);
+    }
+    catch (Exception& e) {
+      if (newFont) {
+        delete newFont;
+        newFont = nullptr;
+      }
+      
+      deallocFTLibrary();
+    }
+
+    return newFont;
   }
 
+  /*
+   * TODO:  I need to remove the GL specific code here.  Move it to somewhere
+   * else.
+   */
   void Font::drawText(const std::string& text, const Colour& colour) {
     activeGlyphSet->tex->makeActive();
     mesh->begin(GL_TRIANGLES);
@@ -116,78 +155,94 @@ namespace io {
     return BoundingBox(0, 0, w, h);
   }
 
-  bool Font::loadFont(const std::string& filename) {
-    path p(filename);
-    if (exists(p) && is_regular_file(p)) {
-      FT_New_Face(library, filename.c_str(), 0, &face);
-    }
-
-    return true;
-  }
-
   void Font::setPixelSize(const uint32_t pixelSize) {
-    FT_Set_Char_Size(face, 0, pixelSize << 6, 96, 96);
-
     if (glyphSets.count(pixelSize) > 0) {
       activeGlyphSet = glyphSets.at(pixelSize);
     }
+    else {
+      if (FT_Set_Char_Size(face, 0, pixelSize << 6, 96, 96) == 0) {
+        //  First, figure out what the dimensions are of the largest glyph in
+        //  pixels.
+        uint32_t maxGlyphWidth = 0;
+        uint32_t maxGlyphHeight = 0;
 
-    //  First, figure out what the dimensions are of the largest glyph in
-    //  pixels.
-    uint32_t maxGlyphWidth = 0;
-    uint32_t maxGlyphHeight = 0;
+        for (uint32_t i = 0; i < Font::MAX_GLYPHS; i++) {
+          FT_Load_Char(face, i, FT_LOAD_RENDER);
+          if (face->glyph->bitmap.width > maxGlyphWidth) {
+            maxGlyphWidth = face->glyph->bitmap.width;
+          }
 
-    for (uint32_t i = 0; i < Font::MAX_GLYPHS; i++) {
-      FT_Load_Char(face, i, FT_LOAD_RENDER);
-      if (face->glyph->bitmap.width > maxGlyphWidth) {
-        maxGlyphWidth = face->glyph->bitmap.width;
-      }
-
-      if (face->glyph->bitmap.rows > maxGlyphHeight) {
-        maxGlyphHeight = face->glyph->bitmap.rows;
-      }
-    }
-
-    //  Calculate image dimensions based on the above.
-    uint32_t imageWidth = minPowerOfTwo(16 * maxGlyphWidth);
-    uint32_t imageHeight = minPowerOfTwo(16 * maxGlyphHeight);
-    uint32_t xOffset = imageWidth / 16;
-    uint32_t yOffset = imageHeight / 16;
-
-    Image m;
-    m.setSize(imageWidth, imageHeight);
-    GlyphSet* glyphSet = new GlyphSet;
-
-    for (uint32_t i = 0; i < Font::MAX_GLYPHS; i++) {
-      FT_Load_Char(face, i, FT_LOAD_RENDER);
-
-      float texX = (float)((i % 16) * xOffset) / imageWidth;
-      float texY = (float)((i / 16) * yOffset) / imageHeight;
-
-      //  Store all the attributes of the glyph that we're interested in,
-      //  namely, texture position, dimensions, advance and baseline
-      //  adjustment.
-      glyphSet->glyphs[i].x = texX;
-      glyphSet->glyphs[i].y = texY;
-      glyphSet->glyphs[i].w = (float)face->glyph->bitmap.width / imageWidth;
-      glyphSet->glyphs[i].h = (float)face->glyph->bitmap.rows / imageHeight;
-      glyphSet->glyphs[i].a = face->glyph->metrics.horiAdvance >> 6;
-      glyphSet->glyphs[i].bl = face->glyph->metrics.horiBearingY >> 6;
-
-      //  Where to draw in the texture image.
-      uint32_t baseX = (i % 16) * xOffset;
-      uint32_t baseY = (i / 16) * yOffset;
-
-      for (uint32_t y = 0; y < face->glyph->bitmap.rows; y++) {
-        for (uint32_t x = 0; x < face->glyph->bitmap.width; x++) {
-          uint8_t pix = face->glyph->bitmap.buffer[(y * face->glyph->bitmap.width) + x];
-          m.setPixel(baseX + x, baseY + y, pix, pix, pix, 255);
+          if (face->glyph->bitmap.rows > maxGlyphHeight) {
+            maxGlyphHeight = face->glyph->bitmap.rows;
+          }
         }
+
+        //  TODO:  Determine if the image exceeds what the GL can handle.
+        //  Calculate image dimensions based on the above.
+        uint32_t imageWidth = minPowerOfTwo(16 * maxGlyphWidth);
+        uint32_t imageHeight = minPowerOfTwo(16 * maxGlyphHeight);
+        uint32_t xOffset = imageWidth / 16;
+        uint32_t yOffset = imageHeight / 16;
+
+        Image m;
+        m.setSize(imageWidth, imageHeight);
+        GlyphSet* glyphSet = new GlyphSet();
+
+        for (uint32_t i = 0; i < Font::MAX_GLYPHS; i++) {
+          if (FT_Load_Char(face, i, FT_LOAD_RENDER) == 0) {
+            float texX = (float)((i % 16) * xOffset) / imageWidth;
+            float texY = (float)((i / 16) * yOffset) / imageHeight;
+
+            //  Store all the attributes of the glyph that we're interested in,
+            //  namely, texture position, dimensions, advance and baseline
+            //  adjustment.
+            glyphSet->glyphs[i].x = texX;
+            glyphSet->glyphs[i].y = texY;
+            glyphSet->glyphs[i].w = (float)face->glyph->bitmap.width / imageWidth;
+            glyphSet->glyphs[i].h = (float)face->glyph->bitmap.rows / imageHeight;
+            glyphSet->glyphs[i].a = face->glyph->metrics.horiAdvance >> 6;
+            glyphSet->glyphs[i].bl = face->glyph->metrics.horiBearingY >> 6;
+
+            //  Where to draw in the texture image.
+            uint32_t baseX = (i % 16) * xOffset;
+            uint32_t baseY = (i / 16) * yOffset;
+
+            for (uint32_t y = 0; y < face->glyph->bitmap.rows; y++) {
+              for (uint32_t x = 0; x < face->glyph->bitmap.width; x++) {
+                uint8_t pix = face->glyph->bitmap.buffer[(y * face->glyph->bitmap.width) + x];
+                m.setPixel(baseX + x, baseY + y, pix, pix, pix, 255);
+              }
+            }
+          }
+        }
+        glyphSet->tex = new Texture(&m);
+        this->glyphSets[pixelSize] = glyphSet;  
+        activeGlyphSet = glyphSet;
+        this->pixelSize = pixelSize;
+      }
+      else {
+        writeToLog(MessageLevel::WARNING, "Could not load font size %u\n", pixelSize);
       }
     }
-    glyphSet->tex = new Texture(&m);
-    this->glyphSets[pixelSize] = glyphSet;
-    activeGlyphSet = glyphSet;
-    this->pixelSize = pixelSize;
+  }
+  
+  static void allocFTLibrary() {
+    if (gLibraryRefCount == 0 && !gLibrary) {
+      if (FT_Init_FreeType(&gLibrary) != 0) {
+        throw Exception("Critical error, could not initialize FreeType.");
+      }
+    }
+    
+    gLibraryRefCount++;
+  }
+  
+  static void deallocFTLibrary() {
+    if (gLibraryRefCount > 0) {
+      gLibraryRefCount--;
+      if (gLibraryRefCount == 0) {
+        FT_Done_FreeType(gLibrary);
+        gLibrary = nullptr;
+      }
+    }
   }
 }

@@ -19,7 +19,7 @@
 #include <cstdint>
 #include "State.hpp"
 #include "Maze.hpp"
-#include "StateMachine.hpp"
+#include "Game.hpp"
 #include "Player.hpp"
 
 namespace io {
@@ -33,7 +33,7 @@ namespace io {
 
   class MazeState : public State {
   public:
-    MazeState(StateMachine* stateMachine, Player* player);
+    MazeState(Game* stateMachine);
     virtual ~MazeState();
 
     virtual void tick();
@@ -55,9 +55,9 @@ namespace io {
     
     uint32_t currentFloor;
     Map* currentMap;
+    Game* game;
     Maze* maze;
     Player* player;
-    StateMachine* stateMachine;
 
     bool inputDisabled;
     uint32_t inputDisabledTicks;

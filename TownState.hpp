@@ -18,7 +18,7 @@
 
 #include "Guild.hpp"
 #include "Party.hpp"
-#include "StateMachine.hpp"
+#include "Game.hpp"
 #include "State.hpp"
 #include "TownMainScreen.hpp"
 #include "ScreenManager.hpp"
@@ -27,14 +27,11 @@
 namespace io {
   class TownState : public State, MenuActionListener {
   public:
-    TownState(StateMachine* stateMachine, ScreenManager* screenManager,
-              Guild* guild, Party* party) {
-
-
-      this->screenManager = screenManager;
-      this->stateMachine = stateMachine;
-      this->guild = guild;
-      this->party = party;
+    TownState(Game* game) {
+      this->screenManager = game->getScreenManager();
+      this->game = game;
+      this->guild = game->getPlayer()->getGuild();
+      this->party = game->getPlayer()->getParty();
 
       mainScreen = new TownMainScreen();
       guildHallController = new GuildHallController(screenManager, guild, party);
@@ -53,7 +50,7 @@ namespace io {
 
     virtual void onMenuItemSelected(Menu* notifier, MenuItem* item) {
       if (item == mainScreen->getLabyrinthMenuItem()) {
-        stateMachine->setState(GameState::MAZE);
+        game->setGameState(GameState::MAZE);
       }
       else {
         if (item == mainScreen->getGuildHallMenuItem()) {
@@ -62,10 +59,10 @@ namespace io {
       }
     }
   private:
+    Game* game;
     Guild* guild;
     Party* party;
     ScreenManager* screenManager;
-    StateMachine* stateMachine;
     TownMainScreen* mainScreen;
     GuildHallController* guildHallController;
   };

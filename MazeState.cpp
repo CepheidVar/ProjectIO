@@ -21,7 +21,7 @@
 #include <stdexcept>
 
 namespace io {
-  MazeState::MazeState(StateMachine* stateMachine, Player* player) {
+  MazeState::MazeState(Game* game) {
     currentFloor = 1;
 
     maze = Maze::mazeFromXML("data/maze.xml");
@@ -31,7 +31,7 @@ namespace io {
 
     currentMap = maze->getFloor(1);
 
-    this->player = player;
+    this->player = game->getPlayer();
     inputDisabled = false;
     inputDisabledTicks = 0;
     animationState = MazeAnimationState::TURNING_LEFT;
@@ -39,7 +39,7 @@ namespace io {
     cameraY = 0;
     cameraAngle = 0;
 
-    this->stateMachine = stateMachine;
+    this->game = game;
   }
 
   MazeState::~MazeState() {
@@ -307,7 +307,7 @@ namespace io {
       }
     }
     else {
-      stateMachine->setState(GameState::TOWN);
+      game->setGameState(GameState::TOWN);
     }
   }
     

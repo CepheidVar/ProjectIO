@@ -18,47 +18,54 @@
 
 #include "Player.hpp"
 #include "Graphics.hpp"
-#include "StateMachine.hpp"
 #include "State.hpp"
 #include "InputEvent.hpp"
 #include "ScreenManager.hpp"
 #include <cstdint>
 
 namespace io {
-  class Game : public StateMachine {
+  enum class GameState {
+    TOWN,
+    MAZE,
+    BATTLE,
+  };
+  
+  class Game {
   public:
     Game();
-    virtual ~Game();
+    ~Game();
     
-    void draw(Graphics* g);
+    void draw(Graphics* g) {
+      state->draw(g);
+      screenManager->draw(g);
+    }
+    
+    GameState getGameState() const {
+      return gameState;
+    }
+    
+    Player* getPlayer() const {
+      return player;
+    }
+    
+    ScreenManager* getScreenManager() const {
+      return screenManager;
+    }
     
     void handleInputEvent(const InputEvent& event) {
       if (!screenManager->handleInputEvent(event)) {
-        currentState->handleInputEvent(event);
+        state->handleInputEvent(event);
       }
     }
     
-    void tick();
-
-    virtual void setState(const GameState state) {
-      switch(state) {
-        case GameState::TOWN:
-          currentState = townState;
-          break;
-        case GameState::MAZE:
-          currentState = mazeState;
-          break;
-        case GameState::BATTLE:
-          return;
-      }
-      screenManager->clear();
-
-      curGameState = state;
-      currentState->onActivate();
+    void tick() {
+      state->tick();
     }
+
+    void setGameState(const GameState state);
   private:
-    GameState curGameState;
-    State* currentState;
+    GameState gameState;
+    State* state;
     State* mazeState;
     Player* player;
     ScreenManager* screenManager;

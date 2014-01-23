@@ -21,22 +21,21 @@ namespace io {
   Game::Game() {
     screenManager = new ScreenManager();
     player = new Player();
-    currentState = nullptr;
-    curGameState = GameState::MAZE;
-    mazeState = new MazeState(this, player);
-    townState = new TownState(this, screenManager, player->getGuild(),
-                              player->getParty());
+    state = nullptr;
+    mazeState = new MazeState(this);
+    townState = new TownState(this);
 
-    currentState = townState;
-    townState->onActivate();
+    setGameState(GameState::TOWN);
   }
   
   Game::~Game() {
-    delete mazeState;
-    mazeState = nullptr;
-
+    state = nullptr;
+    
     delete townState;
     townState = nullptr;
+    
+    delete mazeState;
+    mazeState = nullptr;
 
     delete player;
     player = nullptr;
@@ -45,12 +44,20 @@ namespace io {
     screenManager = nullptr;
   }
   
-  void Game::draw(Graphics* g) {
-    currentState->draw(g);
-    screenManager->draw(g);
-  }
+  void Game::setGameState(const GameState gameState) {
+    switch(gameState) {
+      case GameState::TOWN:
+        state = townState;
+        break;
+      case GameState::MAZE:
+        state = mazeState;
+        break;
+      case GameState::BATTLE:
+        return;
+    }
+    screenManager->clear();
 
-  void Game::tick() {
-    currentState->tick();
+    this->gameState = gameState;
+    state->onActivate();
   }
 }
